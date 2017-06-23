@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
             //s += "\n UNKNOWN: "         + android.os.Build.UNKNOWN;
             //s += "\n HARDWARE: "        + android.os.Build.HARDWARE;
             //s += "\n Build ID: "        + android.os.Build.ID;
-            s += "\n USER: "            + android.os.Build.USER;
+            //s += "\n USER: "            + android.os.Build.USER;
             //s += "\n HOST: "            + android.os.Build.HOST;
 
             Log.i(TAG + " | Device Info > ", s);
