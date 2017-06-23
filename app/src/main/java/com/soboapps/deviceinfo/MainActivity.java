@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private Bitmap bitmap ;
     private TextView tv;
     private ImageView iv;
-
+    
     String getPhoneNumber;
     String getSimSn;
     String getGmail = null;
