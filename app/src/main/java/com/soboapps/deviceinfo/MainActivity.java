@@ -6,9 +6,11 @@ import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Build;
+import android.provider.ContactsContract;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
@@ -34,10 +36,12 @@ public class MainActivity extends AppCompatActivity {
     String getPhoneNumber;
     String getSimSn;
     String getGmail = null;
+    String deviceOwner = null;
     public String allInfo;
 
     private int resultGet_Accounts;
     private int resultRead_Phone_State;
+    private int resultRead_Contacts;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
         resultGet_Accounts = ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS);
         resultRead_Phone_State = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
+        resultRead_Contacts = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
 
         int MyVersion = Build.VERSION.SDK_INT;
         if (MyVersion > Build.VERSION_CODES.LOLLIPOP_MR1) {
@@ -88,7 +93,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkIfAlreadyhavePermission() {
-        if (resultGet_Accounts == PackageManager.PERMISSION_GRANTED && resultRead_Phone_State == PackageManager.PERMISSION_GRANTED) {
+        if (resultGet_Accounts == PackageManager.PERMISSION_GRANTED &&
+                resultRead_Phone_State == PackageManager.PERMISSION_GRANTED &&
+                resultRead_Contacts == PackageManager.PERMISSION_GRANTED) {
             return true;
         } else {
             return false;
@@ -96,7 +103,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void requestForSpecificPermission() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.GET_ACCOUNTS, Manifest.permission.READ_PHONE_STATE}, 101);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.GET_ACCOUNTS,
+                Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS}, 101);
     }
 
     @Override
@@ -125,6 +133,13 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+            Cursor c = getApplication().getContentResolver().query(ContactsContract.Profile.CONTENT_URI, null, null, null, null);
+            c.moveToFirst();
+            String userName = (c.getString(c.getColumnIndex("display_name")));
+            //textView.setText(c.getString(c.getColumnIndex("display_name")));
+            deviceOwner = userName;
+            c.close();
+
             String s = "";
             s += "\n MANUFACTURER: "    + android.os.Build.MANUFACTURER;
             s += "\n Model: "           + android.os.Build.MODEL;
@@ -143,11 +158,11 @@ public class MainActivity extends AppCompatActivity {
             //s += "\n UNKNOWN: "         + android.os.Build.UNKNOWN;
             //s += "\n HARDWARE: "        + android.os.Build.HARDWARE;
             //s += "\n Build ID: "        + android.os.Build.ID;
-            //s += "\n USER: "            + android.os.Build.USER;
+            s += "\n USER: "            + android.os.Build.USER;
             //s += "\n HOST: "            + android.os.Build.HOST;
 
             Log.i(TAG + " | Device Info > ", s);
-            allInfo = "Email: " + getGmail + "\nPhone Number: " + getPhoneNumber + "\nSIM : " + getSimSn + "\n" + s.toString();
+            allInfo = "Owner: " + deviceOwner + "\nEmail: " + getGmail + "\nPhone Number: " + getPhoneNumber + "\nSIM : " + getSimSn + "\n" + s.toString();
             tv.setText(allInfo);
 
             //Find screen size
