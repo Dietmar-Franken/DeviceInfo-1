@@ -26,13 +26,18 @@ import android.widget.TextView;
 
 import com.google.zxing.BarcodeFormat;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
     private Bitmap bitmap ;
     private TextView tv;
     private ImageView iv;
-    
+
+    String getDate;
+    String getTime;
     String getPhoneNumber;
     String getSimSn;
     String getGmail = null;
@@ -49,6 +54,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         tv = (TextView) this.findViewById(R.id.tvInfo);
         iv = (ImageView) this.findViewById(R.id.iv);
+
+        getDate = new SimpleDateFormat("MM-dd-yyyy").format(Calendar.getInstance().getTime());
+        getTime = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
 
         resultGet_Accounts = ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS);
         resultRead_Phone_State = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
@@ -94,8 +102,9 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean checkIfAlreadyhavePermission() {
         if (resultGet_Accounts == PackageManager.PERMISSION_GRANTED &&
-                resultRead_Phone_State == PackageManager.PERMISSION_GRANTED &&
-                resultRead_Contacts == PackageManager.PERMISSION_GRANTED) {
+            resultRead_Phone_State == PackageManager.PERMISSION_GRANTED &&
+            resultRead_Contacts == PackageManager.PERMISSION_GRANTED) {
+
             return true;
         } else {
             return false;
@@ -162,7 +171,14 @@ public class MainActivity extends AppCompatActivity {
             //s += "\n HOST: "            + android.os.Build.HOST;
 
             Log.i(TAG + " | Device Info > ", s);
-            allInfo = "Owner: " + deviceOwner + "\nEmail: " + getGmail + "\nPhone Number: " + getPhoneNumber + "\nSIM : " + getSimSn + "\n" + s.toString();
+            allInfo =
+                    "Date: " + getDate + "    Time: " + getTime +
+                    "\nOwner: " + deviceOwner +
+                    "\nEmail: " + getGmail +
+                    "\nPhone: " + getPhoneNumber +
+                    "\n" + s.toString() +
+                    "\n SIM : " + getSimSn;
+
             tv.setText(allInfo);
 
             //Find screen size
