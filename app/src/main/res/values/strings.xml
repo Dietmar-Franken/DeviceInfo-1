@@ -1,4 +1,31 @@
 <resources>
     <string name="app_name">DeviceInfo</string>
+
     <string name="alert_dialog_ok">OK</string>
+
+    <string name="device_date">Date: </string>
+    <string name="device_time">Time: </string>
+    <string name="device_owner">Owner: </string>
+    <string name="device_email">Email: </string>
+    <string name="device_phone">Phone: </string>
+    <string name="device_sim">SIM: </string>
+
+    <string name="device_manufacture"> Manufacturer: </string>
+    <string name="device_model">Model: </string>
+    <string name="device_serial">Serial: </string>
+    <string name="device_release">Release: </string>
+    <string name="device_os_version">OS Version: </string>
+    <string name="device_os_api_level">OS API Level: </string>
+    <string name="device_brand">Brand: </string>
+    <string name="device_device">Device: </string>
+    <string name="device_product">Product: </string>
+    <string name="device_display">Display: </string>
+    <string name="device_cpu_abi">CPU_ABI: </string>
+    <string name="device_cpu_abi2">CPU_ABI2: </string>
+    <string name="device_unknown">Unknown: </string>
+    <string name="device_hardware">Hardware: </string>
+    <string name="device_build_id">Build ID: </string>
+    <string name="device_user">User: </string>
+    <string name="device_host">Host: </string>
+
 </resources>

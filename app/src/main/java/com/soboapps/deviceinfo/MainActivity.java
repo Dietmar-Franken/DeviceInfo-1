@@ -5,7 +5,9 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.Point;
@@ -23,6 +25,7 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
 
@@ -43,10 +46,16 @@ public class MainActivity extends AppCompatActivity {
     String getGmail = null;
     String deviceOwner = null;
     public String allInfo;
+    public String qrCodeInfo;
+    public String csvCodeInfo;
 
     private int resultGet_Accounts;
     private int resultRead_Phone_State;
     private int resultRead_Contacts;
+    private int resultWrite_External_Storage;
+    private int resultRead_External_Storage;
+
+    Resources res;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +70,8 @@ public class MainActivity extends AppCompatActivity {
         resultGet_Accounts = ContextCompat.checkSelfPermission(this, Manifest.permission.GET_ACCOUNTS);
         resultRead_Phone_State = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE);
         resultRead_Contacts = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS);
+        resultWrite_External_Storage = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        resultRead_External_Storage = ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE);
 
         int MyVersion = Build.VERSION.SDK_INT;
         if (MyVersion > Build.VERSION_CODES.LOLLIPOP_MR1) {
@@ -75,13 +86,13 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public boolean onLongClick(View v) {
                 AlertDialog.Builder dialog = new AlertDialog.Builder(MainActivity.this);
-                //dialog.setCancelable(false);
-                dialog.setTitle(R.string.app_name);
+                //dialog.setCancelable(false); //Cancel Button Not needed, but left code here just in case.
+                dialog.setTitle(deviceOwner);
                 dialog.setMessage(allInfo);
                 dialog.setPositiveButton(R.string.alert_dialog_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-                        //Action if you want it to do something else.
+                        //Action if you want it to do something
                     }
                     //Cancel Button Not needed, but left code here just in case.
                 //})
@@ -102,8 +113,10 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean checkIfAlreadyhavePermission() {
         if (resultGet_Accounts == PackageManager.PERMISSION_GRANTED &&
-            resultRead_Phone_State == PackageManager.PERMISSION_GRANTED &&
-            resultRead_Contacts == PackageManager.PERMISSION_GRANTED) {
+                resultRead_Phone_State == PackageManager.PERMISSION_GRANTED &&
+                resultRead_Contacts == PackageManager.PERMISSION_GRANTED &&
+                resultRead_External_Storage == PackageManager.PERMISSION_GRANTED &&
+                resultWrite_External_Storage == PackageManager.PERMISSION_GRANTED) {
 
             return true;
         } else {
@@ -113,7 +126,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void requestForSpecificPermission() {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.GET_ACCOUNTS,
-                Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS}, 101);
+                Manifest.permission.READ_PHONE_STATE, Manifest.permission.READ_CONTACTS,
+                Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 101);
     }
 
     @Override
@@ -123,6 +137,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void getDeviceInfo() {
         Log.i(TAG, "getDeviceInfo");
+
+        res = getResources();
 
         try {
             TelephonyManager telemamanger = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
@@ -142,44 +158,65 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
+            // Get the Devices First Registered Owner
             Cursor c = getApplication().getContentResolver().query(ContactsContract.Profile.CONTENT_URI, null, null, null, null);
             c.moveToFirst();
             String userName = (c.getString(c.getColumnIndex("display_name")));
-            //textView.setText(c.getString(c.getColumnIndex("display_name")));
             deviceOwner = userName;
             c.close();
 
             String s = "";
-            s += "\n MANUFACTURER: "    + android.os.Build.MANUFACTURER;
-            s += "\n Model: "           + android.os.Build.MODEL;
-            s += "\n SERIAL: "          + android.os.Build.SERIAL;
+            s += "\n" + " " + res.getString(R.string.device_manufacture) + " " +  android.os.Build.MANUFACTURER;
+            s += "\n" + " " + res.getString(R.string.device_model) + " " +  android.os.Build.MODEL;
+            s += "\n" + " " + res.getString(R.string.device_serial) + " " +  android.os.Build.SERIAL;
 
             // MORE STUFF YOU CAN GET
-            //s += "\n RELEASE: "         + android.os.Build.VERSION.RELEASE;
-            //s += "\n OS Version: "      + System.getProperty("os.version")      + "(" + android.os.Build.VERSION.INCREMENTAL + ")";
-            //s += "\n OS API Level: "    + android.os.Build.VERSION.SDK_INT;
-            //s += "\n BRAND: "           + android.os.Build.BRAND;
-            //s += "\n Device: "          + android.os.Build.DEVICE;
-            ////s += "\n Model (and Product): " + android.os.Build.MODEL            + " ("+ android.os.Build.PRODUCT + ")";
-            //s += "\n DISPLAY: "         + android.os.Build.DISPLAY;
-            //s += "\n CPU_ABI: "         + android.os.Build.CPU_ABI;
-            //s += "\n CPU_ABI2: "        + android.os.Build.CPU_ABI2;
-            //s += "\n UNKNOWN: "         + android.os.Build.UNKNOWN;
-            //s += "\n HARDWARE: "        + android.os.Build.HARDWARE;
-            //s += "\n Build ID: "        + android.os.Build.ID;
-            //s += "\n USER: "            + android.os.Build.USER;
-            //s += "\n HOST: "            + android.os.Build.HOST;
+            //s += "\n" + " " + res.getString(R.string.device_release) + " " +  android.os.Build.VERSION.RELEASE;
+            //s += "\n" + " " + res.getString(R.string.device_os_version) + " " +  System.getProperty("os.version")      + "(" + android.os.Build.VERSION.INCREMENTAL + ")";
+            //s += "\n" + " " + res.getString(R.string.device_api_level) + " " +  android.os.Build.VERSION.SDK_INT;
+            //s += "\n" + " " + res.getString(R.string.device_brand) + " " +  android.os.Build.BRAND;
+            //s += "\n" + " " + res.getString(R.string.device_device) + " " +  android.os.Build.DEVICE;
+            ////s += "\n" + " " + res.getString(R.string.device_product) + " " +  android.os.Build.PRODUCT;
+            //s += "\n" + " " + res.getString(R.string.device_display) + " " +  android.os.Build.DISPLAY;
+            //s += "\n" + " " + res.getString(R.string.device_cpu_abi) + " " +  android.os.Build.CPU_ABI;
+            //s += "\n" + " " + res.getString(R.string.device_cpu_abi2) + " " +  android.os.Build.CPU_ABI2;
+            //s += "\n" + " " + res.getString(R.string.device_unknown) + " " +  android.os.Build.UNKNOWN;
+            //s += "\n" + " " + res.getString(R.string.device_hardware) + " " +  android.os.Build.HARDWARE;
+            //s += "\n" + " " + res.getString(R.string.device_build_id) + " " +  android.os.Build.ID;
+            //s += "\n" + " " + res.getString(R.string.device_user) + " " +  android.os.Build.USER;
+            //s += "\n" + " " + res.getString(R.string.device_host) + " " +  android.os.Build.HOST;
 
             Log.i(TAG + " | Device Info > ", s);
             allInfo =
-                    "Date: " + getDate + "    Time: " + getTime +
-                    "\nOwner: " + deviceOwner +
-                    "\nEmail: " + getGmail +
-                    "\nPhone: " + getPhoneNumber +
+                    "\n" + res.getString(R.string.device_date) + " " + getDate +
+                    "\n" + res.getString(R.string.device_time) + " " +  getTime +
+                    //"\n\n" + " " + res.getString(R.string.device_owner) + " " +  deviceOwner +
+                    "\n" + " " + res.getString(R.string.device_email) + " " +  getGmail +
+                    "\n" + " " + res.getString(R.string.device_phone) + " " +  getPhoneNumber +
                     "\n" + s.toString() +
-                    "\n SIM : " + getSimSn;
+                    "\n" + " " + res.getString(R.string.device_sim) + " " +  getSimSn;
 
             tv.setText(allInfo);
+
+            csvCodeInfo = deviceOwner + "," + getGmail + "," + getPhoneNumber + "," +
+                    android.os.Build.MANUFACTURER + "," + android.os.Build.MODEL + "," +
+                    android.os.Build.SERIAL + "," + getSimSn + "," + getDate + "," +  getTime;
+
+            //Intent intent=new Intent(this,DeviceInfoTable.class);
+            //intent.putExtra("csvCodeInfo",csvCodeInfo);
+            //startActivity(intent);
+
+
+            /*
+            private static final String INSERT_QRCODE_INFO = "insert into "
+                    + TABLE_DEVICE_INFO + "(_ID,OWNER,EMAIL,PHONE,MANUFACTURER,MODEL,SERIAL,DATE,TIME)"+
+                    " values ('1','deviceOwner','getGmail','getPhoneNumber','android.os.Build.MANUFACTURER', + " +
+                    "'android.os.Build.MODEL','android.os.Build.SERIAL','getSimSn','getDate','getTime')";
+
+            public static void onCreate(SQLiteDatabase database) {
+                database.execSQL(INSERT_QRCODE_INFO);
+            }
+            */
 
             //Find screen size
             WindowManager manager = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -191,8 +228,11 @@ public class MainActivity extends AppCompatActivity {
             int smallerDimension = width < height ? width : height;
             smallerDimension = smallerDimension * 3/4;
 
-            //Encode with a QR Code image
-            QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(allInfo,
+            qrCodeInfo = res.getString(R.string.device_owner) + " " +  deviceOwner + allInfo;
+
+            //Encode with a QR Code image csvCodeInfo
+            //QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(qrCodeInfo,
+            QRCodeEncoder qrCodeEncoder = new QRCodeEncoder(csvCodeInfo,
                     null,
                     Contents.Type.TEXT,
                     BarcodeFormat.QR_CODE.toString(),
@@ -201,6 +241,8 @@ public class MainActivity extends AppCompatActivity {
                 bitmap = qrCodeEncoder.encodeAsBitmap();
                 ImageView myImage = (ImageView) findViewById(R.id.iv);
                 myImage.setImageBitmap(bitmap);
+
+            //Toast.makeText(getApplicationContext(),csvCodeInfo, Toast.LENGTH_LONG).show();
 
         } catch (Exception e) {
             Log.e(TAG, "Error getting Device INFO");
